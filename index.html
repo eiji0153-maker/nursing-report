@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="看護報告">
+  <title>訪問看護 情報共有フォーム</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login" class="screen">
+  <div class="login-card">
+    <div class="login-logo">🏥</div>
+    <div class="login-title">訪問看護 情報共有フォーム</div>
+    <div class="login-subtitle">職員名とPINを入力してください</div>
+
+    <div style="margin-bottom:12px;font-size:13px;font-weight:600;color:#6b7280;text-align:left;">職員を選択</div>
+    <div class="staff-grid" id="staff-grid"></div>
+
+    <div style="font-size:13px;font-weight:600;color:#6b7280;margin-bottom:8px;" id="selected-staff-name">職員を選択</div>
+    <div class="pin-display" id="pin-display">　</div>
+
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinInput('1')">1</button>
+      <button class="pin-btn" onclick="pinInput('2')">2</button>
+      <button class="pin-btn" onclick="pinInput('3')">3</button>
+      <button class="pin-btn" onclick="pinInput('4')">4</button>
+      <button class="pin-btn" onclick="pinInput('5')">5</button>
+      <button class="pin-btn" onclick="pinInput('6')">6</button>
+      <button class="pin-btn" onclick="pinInput('7')">7</button>
+      <button class="pin-btn" onclick="pinInput('8')">8</button>
+      <button class="pin-btn" onclick="pinInput('9')">9</button>
+      <button class="pin-btn danger" onclick="pinInput('del')">⌫</button>
+      <button class="pin-btn" onclick="pinInput('0')">0</button>
+      <button class="pin-btn" style="background:#dbeafe;color:#2563eb" onclick="pinInput('ok')">OK</button>
+    </div>
+
+    <p style="font-size:11px;color:#d1d5db;margin-top:8px;">初回利用時は設定から職員を登録してください</p>
+    <button class="btn btn-secondary btn-sm btn-full" style="margin-top:12px;" onclick="showAdminSetup()">⚙️ 初期設定（管理者）</button>
+  </div>
+</div>
+
+<!-- ===== APP SCREEN ===== -->
+<div id="screen-app" class="screen">
+
+  <!-- Header -->
+  <div class="app-header">
+    <div>
+      <div class="app-header-title">訪問看護 情報共有</div>
+      <div class="app-header-sub" id="app-user-name"></div>
+    </div>
+    <div class="header-right">
+      <button class="header-btn" onclick="logout()">ロック</button>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="create" onclick="switchTab('create')">
+      <span class="tab-icon">✏️</span>文書作成
+    </button>
+    <button class="tab-btn" data-tab="history" onclick="switchTab('history')">
+      <span class="tab-icon">📋</span>履歴
+    </button>
+    <button class="tab-btn" data-tab="patients" onclick="switchTab('patients')">
+      <span class="tab-icon">👤</span>利用者
+    </button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+      <span class="tab-icon">⚙️</span>設定
+    </button>
+  </div>
+
+  <!-- ===== CREATE TAB ===== -->
+  <div id="tab-create" class="tab-content active">
+
+    <!-- Step Indicator -->
+    <div class="steps">
+      <div class="step active" id="step-ind-1-wrap">
+        <div class="step-num" id="step-ind-1">1</div>
+        <div class="step-label">利用者</div>
+      </div>
+      <div class="step-line" id="step-line-1"></div>
+      <div class="step" id="step-ind-2-wrap">
+        <div class="step-num" id="step-ind-2">2</div>
+        <div class="step-label">テンプレ</div>
+      </div>
+      <div class="step-line" id="step-line-2"></div>
+      <div class="step" id="step-ind-3-wrap">
+        <div class="step-num" id="step-ind-3">3</div>
+        <div class="step-label">入力</div>
+      </div>
+      <div class="step-line" id="step-line-3"></div>
+      <div class="step" id="step-ind-4-wrap">
+        <div class="step-num" id="step-ind-4">4</div>
+        <div class="step-label">出力</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Patient -->
+    <div id="step-1" class="create-step">
+      <div class="card">
+        <div class="card-title">👤 利用者を選択</div>
+        <div class="form-group">
+          <select id="patient-select" onchange="onPatientSelect(this.value)">
+            <option value="">利用者を選択してください</option>
+          </select>
+        </div>
+        <p style="font-size:12px;color:#9ca3af;margin-bottom:16px;">利用者が表示されない場合は「利用者」タブから登録してください</p>
+        <button class="btn btn-primary btn-full" onclick="nextStep()">次へ →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Template -->
+    <div id="step-2" class="create-step" style="display:none">
+      <div class="card">
+        <div class="card-title">📝 テンプレートを選択</div>
+        <div class="template-grid" id="template-grid"></div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="prevStep()">← 戻る</button>
+          <button class="btn btn-primary" onclick="nextStep()">次へ →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Input Form -->
+    <div id="step-3" class="create-step" style="display:none">
+      <div class="card">
+        <div class="card-title">📋 内容を入力</div>
+        <div id="form-fields"></div>
+        <div class="btn-group" style="margin-top:8px;">
+          <button class="btn btn-secondary" onclick="prevStep()">← 戻る</button>
+          <button class="btn btn-primary" onclick="nextStep()">プレビュー →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Preview & Output -->
+    <div id="step-4" class="create-step" style="display:none">
+      <div id="preview-container"></div>
+      <div style="margin-top:12px;">
+        <button class="btn btn-secondary btn-full" onclick="showStep(3)">← 内容を修正</button>
+        <button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="resetCreate()">🔄 最初からやり直す</button>
+      </div>
+    </div>
+
+  </div><!-- /tab-create -->
+
+  <!-- ===== HISTORY TAB ===== -->
+  <div id="tab-history" class="tab-content">
+    <div class="search-bar">
+      <input type="text" id="history-search" placeholder="利用者名・テンプレートで検索" oninput="historySearch()">
+    </div>
+    <div class="card">
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== PATIENTS TAB ===== -->
+  <div id="tab-patients" class="tab-content">
+    <button class="btn btn-primary btn-full" style="margin-bottom:10px;" onclick="openPatientModal()">＋ 利用者を追加</button>
+    <div class="search-bar" style="margin-bottom:10px;">
+      <input type="text" id="patient-search" placeholder="利用者名で検索" oninput="patientSearch()">
+    </div>
+    <div class="card">
+      <div id="patient-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS TAB ===== -->
+  <div id="tab-settings" class="tab-content">
+
+    <div class="settings-section">
+      <div class="settings-section-title">事業所情報</div>
+      <div class="card">
+        <div class="form-group">
+          <label>事業所名</label>
+          <input type="text" id="s-company-name" placeholder="訪問看護ステーション〇〇">
+        </div>
+        <div class="form-group">
+          <label>電話番号</label>
+          <input type="tel" id="s-company-tel" placeholder="00-0000-0000">
+        </div>
+        <div class="form-group">
+          <label>FAX番号</label>
+          <input type="tel" id="s-company-fax" placeholder="00-0000-0000">
+        </div>
+        <div class="form-group">
+          <label>自動ロックまでの時間</label>
+          <select id="s-lock-timeout">
+            <option value="3">3分</option>
+            <option value="5" selected>5分</option>
+            <option value="10">10分</option>
+            <option value="30">30分</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveSettings()">設定を保存</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">職員管理</div>
+      <div class="card">
+        <div id="staff-list"></div>
+        <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="openStaffModal()">＋ 職員を追加</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">定型文管理</div>
+      <div class="card">
+        <div id="phrase-list"></div>
+        <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="openPhraseModal()">＋ 定型文を追加</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">データ管理</div>
+      <div class="card">
+        <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">端末故障・機種変更に備えて定期的にバックアップを取ることを推奨します。</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="exportData()">📤 エクスポート</button>
+          <button class="btn btn-secondary" onclick="importData()">📥 インポート</button>
+        </div>
+        <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="onImportFile(event)">
+        <p style="font-size:11px;color:#9ca3af;margin-top:8px;">エクスポート：利用者・職員・定型文・設定をJSONファイルで保存<br>インポート：バックアップJSONから復元（既存データに追加）</p>
+      </div>
+    </div>
+
+  </div><!-- /tab-settings -->
+
+</div><!-- /screen-app -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- Patient Modal -->
+<div class="modal-overlay" id="modal-patient" onclick="if(event.target===this)closeModal('modal-patient')">
+  <div class="modal">
+    <div class="modal-title" id="modal-patient-title">利用者を追加</div>
+    <form id="patient-form" onsubmit="event.preventDefault();savePatient()">
+      <input type="hidden" id="patient-id">
+      <div class="form-group">
+        <label>氏名 <span style="color:#dc2626">*</span></label>
+        <input type="text" id="p-name" placeholder="山田 花子" required>
+      </div>
+      <div class="form-group">
+        <label>生年月日</label>
+        <input type="date" id="p-birthday">
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;">担当ケアマネージャー</div>
+      <div class="form-group">
+        <label>氏名</label>
+        <input type="text" id="p-care-manager" placeholder="担当CM名">
+      </div>
+      <div class="form-group">
+        <label>事業所名</label>
+        <input type="text" id="p-care-manager-org" placeholder="居宅介護支援事業所名">
+      </div>
+      <div class="form-group">
+        <label>FAX番号</label>
+        <input type="tel" id="p-care-manager-fax" placeholder="00-0000-0000">
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;">主治医</div>
+      <div class="form-group">
+        <label>医師名</label>
+        <input type="text" id="p-doctor" placeholder="主治医名">
+      </div>
+      <div class="form-group">
+        <label>医療機関名</label>
+        <input type="text" id="p-doctor-org" placeholder="クリニック・病院名">
+      </div>
+      <div class="form-group">
+        <label>FAX番号</label>
+        <input type="tel" id="p-doctor-fax" placeholder="00-0000-0000">
+      </div>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-patient')">キャンセル</button>
+        <button type="submit" class="btn btn-primary">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Staff Modal -->
+<div class="modal-overlay" id="modal-staff" onclick="if(event.target===this)closeModal('modal-staff')">
+  <div class="modal">
+    <div class="modal-title">職員を追加</div>
+    <div class="form-group">
+      <label>氏名</label>
+      <input type="text" id="new-staff-name" placeholder="例：山田 看護子">
+    </div>
+    <div class="form-group">
+      <label>PIN（4〜6桁の数字）</label>
+      <input type="tel" id="new-staff-pin" placeholder="1234" maxlength="6" inputmode="numeric">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeModal('modal-staff')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveStaff()">登録</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN Change Modal -->
+<div class="modal-overlay" id="modal-pin-change" onclick="if(event.target===this)closeModal('modal-pin-change')">
+  <div class="modal">
+    <div class="modal-title" id="pin-change-staff-name">PINを変更</div>
+    <input type="hidden" id="pin-change-staff-id">
+    <div class="form-group">
+      <label>新しいPIN（4〜6桁の数字）</label>
+      <input type="tel" id="new-pin-value" placeholder="新しいPINを入力" maxlength="6" inputmode="numeric">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeModal('modal-pin-change')">キャンセル</button>
+      <button class="btn btn-primary" onclick="savePinChange()">変更</button>
+    </div>
+  </div>
+</div>
+
+<!-- Phrase Modal -->
+<div class="modal-overlay" id="modal-phrase" onclick="if(event.target===this)closeModal('modal-phrase')">
+  <div class="modal">
+    <div class="modal-title" id="modal-phrase-title">定型文を追加</div>
+    <input type="hidden" id="phrase-edit-id">
+    <div class="form-group">
+      <label>カテゴリ</label>
+      <input type="text" id="new-phrase-cat" placeholder="例：看護、リハビリ、共通">
+    </div>
+    <div class="form-group">
+      <label>定型文</label>
+      <textarea id="new-phrase-text" rows="3" placeholder="定型文を入力してください"></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeModal('modal-phrase')">キャンセル</button>
+      <button class="btn btn-primary" onclick="savePhrase()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Detail Modal -->
+<div class="modal-overlay" id="modal-history" onclick="if(event.target===this)closeModal('modal-history')">
+  <div class="modal">
+    <div class="modal-title">送信履歴の詳細</div>
+    <div id="modal-history-content"></div>
+    <button class="btn btn-secondary btn-full" style="margin-top:12px;" onclick="closeModal('modal-history')">閉じる</button>
+  </div>
+</div>
+
+<!-- Admin Setup Modal -->
+<div class="modal-overlay" id="modal-admin" onclick="if(event.target===this)closeModal('modal-admin')">
+  <div class="modal">
+    <div class="modal-title">⚙️ 初期設定</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:16px;">最初に事業所情報と職員を登録してください。</p>
+    <div class="form-group">
+      <label>事業所名</label>
+      <input type="text" id="admin-company-name" placeholder="訪問看護ステーション〇〇">
+    </div>
+    <div class="form-group">
+      <label>電話番号</label>
+      <input type="tel" id="admin-company-tel" placeholder="00-0000-0000">
+    </div>
+    <div class="form-group">
+      <label>FAX番号</label>
+      <input type="tel" id="admin-company-fax" placeholder="00-0000-0000">
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:10px;">最初の職員を登録</div>
+    <div class="form-group">
+      <label>氏名</label>
+      <input type="text" id="admin-staff-name" placeholder="例：山田 花子">
+    </div>
+    <div class="form-group">
+      <label>PIN（4〜6桁）</label>
+      <input type="tel" id="admin-staff-pin" placeholder="1234" maxlength="6" inputmode="numeric">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeModal('modal-admin')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveAdminSetup()">設定を完了</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Print Area -->
+<div id="print-area" style="display:none"></div>
+
+<script type="module" src="app.js"></script>
+<script>
+// Admin setup (outside module for inline onclick)
+function showAdminSetup() {
+  document.getElementById('modal-admin').classList.add('active');
+}
+async function saveAdminSetup() {
+  // This runs before module is ready; defer to app.js exposed globals
+  const name = document.getElementById('admin-company-name').value.trim();
+  const tel = document.getElementById('admin-company-tel').value.trim();
+  const fax = document.getElementById('admin-company-fax').value.trim();
+  const staffName = document.getElementById('admin-staff-name').value.trim();
+  const staffPin = document.getElementById('admin-staff-pin').value.trim();
+  if (!staffName || !staffPin) { alert('職員名とPINを入力してください'); return; }
+  if (!/^\d{4,6}$/.test(staffPin)) { alert('PINは4〜6桁の数字で入力してください'); return; }
+  // Use DB directly after module load
+  setTimeout(async () => {
+    try {
+      const { DB } = await import('./db.js');
+      if (name) await DB.settings.set('companyName', name);
+      if (tel) await DB.settings.set('companyTel', tel);
+      if (fax) await DB.settings.set('companyFax', fax);
+      await DB.staff.save({ name: staffName, pin: staffPin });
+      document.getElementById('modal-admin').classList.remove('active');
+      window.showToast?.('設定が完了しました。ログインしてください ✓', 'success');
+      // Refresh staff buttons
+      const grid = document.getElementById('staff-grid');
+      const allStaff = await DB.staff.getAll();
+      grid.innerHTML = allStaff.map(s =>
+        `<button class="staff-btn" data-id="${s.id}" onclick="selectStaff(${s.id},'${s.name}')">${s.name}</button>`
+      ).join('');
+    } catch(e) { alert('エラーが発生しました: ' + e.message); }
+  }, 100);
+}
+</script>
+</body>
+</html>
